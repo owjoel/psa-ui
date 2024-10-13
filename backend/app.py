@@ -3,18 +3,18 @@ import sys
 import models
 
 from concurrent.futures import ProcessPoolExecutor
-from predict import predict_eta, predict_waiting_time
+from predict import predict_eta, predict_lowest_wt_berth
 from models import ShipData, db_init
 from flask import Flask, request, jsonify
 from pymongo import MongoClient, errors
 from pymongo.collection import Collection
-from dotenv import load_dotenv
-from predict import predict_eta, predict_waiting_time
+# from dotenv import load_dotenv
+# from predict import predict_waiting_time
 import numpy as np
 from flask_cors import CORS
 
 # PLEASE UNCOMMENT EVERYTHING IM COMMENTED TO ALLOW MONGODB
-load_dotenv()
+# load_dotenv()
 
 # FLASK
 app = Flask(__name__)
@@ -79,9 +79,18 @@ def predict():
     
     return jsonify(results)
 
+@app.route('/predict_lowest_wt_berth', methods=['POST'])
+def predict_lowest_wt_berth_endpoint():
+    try:
+        berth, wait_time = predict_lowest_wt_berth()
+        return jsonify({"berth": berth, "waiting_time": wait_time})
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to predict lowest waiting time berth"}), 500
+
 
 # DATABASE
 
 if __name__ == "__main__":
-    db_init()
+    # db_init()
     app.run(debug=False, )

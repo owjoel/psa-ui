@@ -6,16 +6,16 @@ from datetime import datetime
 from pymongo import MongoClient, errors
 from pymongo.database import Database
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from urllib.parse import quote_plus
 import pandas as pd
 import random
 
-load_dotenv()
+# load_dotenv()
 eta_model = joblib.load('eta_model.joblib')
 eta_scaler = joblib.load('eta_scaler.joblib')
-waiting_time_model = joblib.load('WT.pkl')
-wt_scaler = joblib.load('WTscaler.pkl')
+# waiting_time_model = joblib.load('WT.pkl')
+# wt_scaler = joblib.load('WTscaler.pkl')
 
 expected_columns = ['Ship Type', 'Vessel Max Draft', 'MaxDraft', 'MaxLOA', 'BerthLength', 'ATA_day_Friday', 'ATA_day_Monday', 'ATA_day_Saturday', 'ATA_day_Sunday', 'ATA_day_Thursday', 'ATA_day_Tuesday', 'ATA_day_Wednesday', 'EDT_day_Friday', 'EDT_day_Monday', 'EDT_day_Saturday', 'EDT_day_Sunday', 'EDT_day_Thursday', 'EDT_day_Tuesday', 'EDT_day_Wednesday', 'ATA_shift', 'EDT_shift', 'ATA_season_autumn', 'ATA_season_spring', 'ATA_season_summer', 'ATA_season_winter', 'EDT_season_autumn', 'EDT_season_spring', 'EDT_season_summer', 'EDT_season_winter', 'ATA_inport', 'Length', 'Gross Tonnage', 'Breadth', 'ATA_berth_delay', 'Expected Waiting time']
 
@@ -46,7 +46,7 @@ def db_init():
 # Initialize the connection
 client: MongoClient
 db: Database
-db_init()
+# db_init()
 
 def predict_eta(data):
     scaled_data = eta_scaler.transform(data)

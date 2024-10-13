@@ -38,8 +38,13 @@ export function Form() {
           <Button rightSection={<IconCrane size={14} />}>Recompute Best Berth</Button>
         </div>
         <Divider orientation="vertical" />
-        <Box w="60rem" pl={10}>
+        <Box w="20rem" pl={10}>
           <Text fz="xs" tt="uppercase" fw={700} c="dimmed">Assigned</Text>
+          <Text fz="xl" fw={700}>B4</Text>
+        </Box>
+        <Divider orientation="vertical" />
+        <Box w="30rem" pl={10}>
+          <Text fz="xs" tt="uppercase" fw={700} c="dimmed">Estimated Waiting Time Before Serviced</Text>
           <Text fz="xl" fw={700}>B4</Text>
         </Box>
       </Flex>

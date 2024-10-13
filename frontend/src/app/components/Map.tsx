@@ -34,9 +34,10 @@ const nmphToDeg = (nmph: number) => nmph * (1 / 60) / 10; // Adjusted for small 
 const originalShips: Ship[] = [
   // { name: 'Ship A', LAT: 25.76609, LON: -80.14147, SOG: 9.0, COG: 149.9, Heading: 30, Length: 90.0, Width: 13.0, Draft: 4.3, distanceToPort: 0.59 },
   { name: 'Ship A', LAT: 25.68729, LON: -79.93940, SOG: 9.7, COG: -72.2, Heading: 180, Length: 147.0, Width: 23.0, Draft: 8.5, distanceToPort: 12.774887 },
-  { name: 'Ship B', LAT: 25.67579, LON: -80.00238, SOG: 12.5, COG: 9.3, Heading: 270, Length: 299.0, Width: 40.0, Draft: 11.7, distanceToPort: 9.89 },
-  { name: 'Ship C', LAT: 25.76630, LON: -80.15911, SOG: 0.0, COG: -138.6, Heading: 271.0, Length: 139.0, Width: 22.0, Draft: 7.4, distanceToPort: 0.000598, },
-  { name: 'Ship D', LAT: 27.91812, LON: -80.04220, SOG: 16.2, COG: 175.7, Heading: 90, Length: 335.0, Width: 42.0, Draft: 14.6, distanceToPort: 128.899029 },
+  { name: 'Ship B', LAT: 25.67579, LON: -80.00238, SOG: 8.5, COG: 9.3, Heading: 270, Length: 299.0, Width: 40.0, Draft: 11.7, distanceToPort: 9.89 },
+  { name: 'Ship C', LAT: 25.97630, LON: -80.00011, SOG: 0.0, COG: -138.6, Heading: 251.0, Length: 139.0, Width: 22.0, Draft: 7.4, distanceToPort: 0.000598, },
+  { name: 'Ship D', LAT: 25.76630, LON: -80.12911, SOG: 0.0, COG: -138.6, Heading: 211.0, Length: 139.0, Width: 22.0, Draft: 7.4, distanceToPort: 0.000598, },
+  { name: 'Ship E', LAT: 27.91812, LON: -80.04220, SOG: 16.2, COG: 175.7, Heading: 90, Length: 335.0, Width: 42.0, Draft: 14.6, distanceToPort: 128.899029 },
 ]; 
 
 const ports: Port[] = [
@@ -59,11 +60,12 @@ const createShipIcon = (heading: number) => {
   });
 };
 
-export default function Map() {
+export default function Map({ onShipClick }: { onShipClick: (name: string) => void }) {
   const [etaResults, setEtaResults] = useState<{ name: string; eta: number }[]>([]);
 
 
   const [ships, setShips] = useState(originalShips);
+  
   
   // Update positions based on heading and SOG
   const updateShipPositions = () => {
@@ -113,7 +115,7 @@ export default function Map() {
         <div className="grow" style={{ flex: 1 }}>
           <Title order={5}>Map</Title>
           <Space h="md" />
-          <MapContainer className="h-[35rem] rounded-md" center={[25.7745, -80.1709]} zoom={10} scrollWheelZoom={false}>
+          <MapContainer className="h-[33rem] rounded-md" center={[25.7745, -80.1709]} zoom={10} scrollWheelZoom={false}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -121,7 +123,14 @@ export default function Map() {
             
             {/* Render ship markers */}
             {ships.map((ship, index) => (
-              <Marker key={`ship-${index}`} position={[ship.LAT, ship.LON]} icon={createShipIcon(ship.Heading)}>
+              <Marker
+              key={`ship-${index}`}
+              position={[ship.LAT, ship.LON]}
+              icon={createShipIcon(ship.Heading)}
+              // eventHandlers={{
+              //   click: () => onShipClick(ship.name), // Call the prop function on click
+              // }}
+            >
                 <Popup>
                   <b>{ship.name}</b><br />
                   Latitude: {ship.LAT}<br />
@@ -162,15 +171,25 @@ export default function Map() {
         
         {/* Map over etaResults to create a styled list */}
         {etaResults.map(({ name, eta }, index) => (
-          <Box key={index} mb="sm" p="xs" style={{ borderBottom: '1px solid #f0f0f0' }}>
-            <Flex align="center" justify="space-between">
-              <Text fz="md" fw={600} style={{ flex: 1 }}>{name}</Text>
-              <Badge color="blue" variant="light" style={{ minWidth: '60px', textAlign: 'center' }}>
-                {eta.toFixed(2)} mins
-              </Badge>
-            </Flex>
-          </Box>
-        ))}
+  <div 
+    key={index} 
+    onClick={(event) => {
+      event.preventDefault(); // Prevent default link action
+      event.stopPropagation(); // Stop click from bubbling up
+      onShipClick(name); // Invoke the click handler with ship name
+    }} 
+    style={{ cursor: 'pointer', padding: '8px', borderBottom: '1px solid #f0f0f0' }}
+  >
+    <Box p="xs">
+      <Flex align="center" justify="space-between">
+        <Text fz="md" fw={600} style={{ flex: 1 }}>{name}</Text>
+        <Badge color="blue" variant="light" style={{ minWidth: '60px', textAlign: 'center' }}>
+          {eta.toFixed(2)} mins
+        </Badge>
+      </Flex>
+    </Box>
+  </div>
+))}
       </Box>
 
       </Flex>
