@@ -4,7 +4,7 @@ from enum import Enum
 class ShipType(Enum):
     CONTAINER = 0
     GENERAL_HEAVY_LIFT = 1
-    TANKER = 2  # Tanker (CRUDE,FUEL,DIESEL,LUB)
+    TANKER = 2
     LNG_TANKER = 3
     LPG_TANKER = 4
 
@@ -15,9 +15,17 @@ class Shift(Enum):
 
 @dataclass
 class ShipData:
+    LAT: float
+    LON: float
+    SOG: float
+    COG: float
+    Heading: float
+    Length: int
+    Width: int
+    Draft: float
+    distanceToPort: float
     Ship_Type: ShipType
     Vessel_Max_Draft: float
-    WaitingTime: float
     MaxDraft: float
     MaxLOA: float
     BerthLength: float

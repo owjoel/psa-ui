@@ -1,6 +1,8 @@
 import os
 import sys
 
+from concurrent.futures import ProcessPoolExecutor
+from predict import predict_eta, predict_waiting_time
 from models import ShipData
 from urllib.parse import quote_plus
 from flask import Flask, request, jsonify
@@ -27,10 +29,17 @@ def allocate_ship():
             return jsonify({ "error": "Invalid JSON" }), 400
         ship_data = ShipData.from_dict(data)
         print(ship_data)
+
+        with ProcessPoolExecutor() as executor:
+            f1 = executor.submit(predict_eta, ship_data)
+            f2 = executor.submit(predict_waiting_time)
+
         return jsonify(ship_data.to_dict()), 200
+    
     except Exception as e:
         print(e)
         return jsonify({ "error": "We encountered an error" }), 500
+    
 
 
 # DATABASE
