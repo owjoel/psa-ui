@@ -1,5 +1,32 @@
-from dataclasses import dataclass
+import os
+import sys
+
+from pymongo import MongoClient, errors
+from pymongo.database import Database
+from datetime import datetime
+from dataclasses import dataclass, asdict
 from enum import Enum
+from urllib.parse import quote_plus
+
+client: MongoClient
+db: Database
+
+def db_init():
+    global client
+    global collection
+    host: str = os.getenv('MONGO_HOST')
+    port: str = os.getenv('MONGO_PORT')
+    username: str = os.getenv('MONGO_USERNAME')
+    password: str = os.getenv('MONGO_PASSWORD')
+    uri = "mongodb://%s:%s@%s:%s" % (
+        quote_plus(username), quote_plus(password), quote_plus(host), quote_plus(port))
+    try:
+        client = MongoClient(uri)
+        db = client['dev']
+        collection = db['allocations']
+        print(f"MongoDB client connected")
+    except errors.ConnectionFailure:
+        sys.exit(1)
 
 class ShipType(Enum):
     CONTAINER = 0
@@ -78,3 +105,69 @@ class ShipData:
             else:
                 result[key] = value
         return result
+
+@dataclass
+class IncomingShips:
+    IMO: str
+    Lat: float
+    Long: float
+    SOG: float
+    COG: float
+    Heading: float
+    Draft: float
+    distanceToPort: float
+    ETA: datetime
+    Berth_id: str
+
+    def create(self):
+        db.IncomingShips.insert_one(asdict(self))
+    
+    @staticmethod
+    def get_by_imo(IMO):
+        return db.IncomingShips.find_one({"IMO": IMO})
+
+@dataclass
+class Berth:
+    id: int
+    BerthLength: float
+    MaxDraft: float
+    MaxLOA: float
+    Terminal_id: int
+    EstimatedWaitTime: datetime
+    UploadTime: datetime
+
+    def create(self):
+        db.Berth.insert_one(asdict(self))
+    
+    @staticmethod
+    def get_by_id(id):
+        return db.Berth.find_one({"id": id})
+
+@dataclass
+class DockedShips:
+    IMO: str
+    ATA: datetime
+    ShipType: str
+    ETD: datetime
+    Berth_id: str
+    MaxVesselDraft: float
+
+
+    def create(self):
+        db.DockedShips.insert_one(asdict(self))
+    
+    @staticmethod
+    def get_by_imo(IMO):
+        return db.DockedShips.find_one({"IMO": IMO})
+
+@dataclass
+class Terminal:
+    id: int
+    ship_count: int
+
+    def create(self):
+        db.Terminal.insert_one(asdict(self))
+    
+    @staticmethod
+    def get_by_id(id):
+        return db.Terminal.find_one({"id": id})

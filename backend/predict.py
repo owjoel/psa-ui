@@ -1,7 +1,7 @@
 import joblib
 
-eta_model = joblib.load()
-waiting_time_model = joblib.load()
+eta_model = None
+waiting_time_model = None
 
 def predict_eta(data):
     return eta_model.predict(data)

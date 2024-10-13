@@ -1,10 +1,10 @@
 import os
 import sys
+import models
 
 from concurrent.futures import ProcessPoolExecutor
 from predict import predict_eta, predict_waiting_time
-from models import ShipData
-from urllib.parse import quote_plus
+from models import ShipData, db_init
 from flask import Flask, request, jsonify
 from pymongo import MongoClient, errors
 from pymongo.collection import Collection
@@ -14,7 +14,7 @@ load_dotenv()
 
 # FLASK
 app = Flask(__name__)
-client: MongoClient
+
 collection: Collection
 
 @app.get('/health')
@@ -51,22 +51,7 @@ def allocate_ship():
 
 
 # DATABASE
-def db_init():
-    global client
-    global collection
-    host: str = os.getenv('MONGO_HOST')
-    port: str = os.getenv('MONGO_PORT')
-    username: str = os.getenv('MONGO_USERNAME')
-    password: str = os.getenv('MONGO_PASSWORD')
-    uri = "mongodb://%s:%s@%s:%s" % (
-        quote_plus(username), quote_plus(password), quote_plus(host), quote_plus(port))
-    try:
-        client = MongoClient(uri)
-        db = client['dev']
-        collection = db['allocations']
-        print(f"MongoDB client connected")
-    except errors.ConnectionFailure:
-        sys.exit(1)
+
 
 if __name__ == "__main__":
     db_init()
