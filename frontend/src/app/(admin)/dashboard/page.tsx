@@ -30,6 +30,8 @@ export default function Dashboard() {
       </Flex>
       <Space h="lg" />
       <Map />
+
+
     </div>
   );
 }
