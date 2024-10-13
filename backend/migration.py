@@ -93,3 +93,12 @@ def batch_insert_berth(records):
 
 json_records_berths = get_berth_json(df_berth)
 batch_insert_berth(json_records_berths)
+
+append_file = "./data/unique_imo_data.csv"
+
+df = pd.read_csv(append_file)
+for _, row in df.iterrows():
+    result = db.DockedShips.find_one_and_update(
+        { "IMO": str(row['IMO']) },
+        { "$set": { "BerthDelay": row['ATA_berth_delay'] } }
+    )
