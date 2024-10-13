@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 from urllib.parse import quote_plus
 
 load_dotenv()
-eta_model = joblib.load('WT.pkl')
-waiting_time_model = joblib.load()
+# eta_model = joblib.load('eta.pkl')
+waiting_time_model = joblib.load('WT.pkl')
 
 encodeMapping = {
     'Container': 0,
@@ -43,17 +43,19 @@ db: Database
 
 db_init()
 
-def predict_eta(data):
-    return eta_model.predict(data)
+# def predict_eta(data):
+#     return eta_model.predict(data)
 
 def get_lowest_wt_berth():
     berth_waiting_times = {port: 0 for port in db.Berth.find().distinct('Berth_id')}
     
     ships_in_port = get_ships_in_port()
-
+    print(f"Ships in port: {ships_in_port}")
     for berth in berth_waiting_times:
         total_waiting_time = 0
+        print(f"Calculating waiting time for berth {berth}")
         for ship in db.DockedShips.find({"PortCode": port}):  # Assuming a 'PortCode' field is available
+            print(f"Calculating waiting time for ship {ship}")
             features = get_input_features(ship, berth, ships_in_port)
             total_waiting_time += waiting_time_model.predict([features])[0]
         berth_waiting_times[port] = total_waiting_time
@@ -61,12 +63,15 @@ def get_lowest_wt_berth():
     min_waiting_time_port = None
     min_waiting_time = float('inf')
     for port, waiting_time in berth_waiting_times.items():
+        print(f"Checking berth {port} with waiting time {waiting_time}")
         if waiting_time < min_waiting_time:
             min_waiting_time = waiting_time
             min_waiting_time_port = port
+            print(f"New minimum waiting time found: {min_waiting_time} at port {port}")  
         elif waiting_time == min_waiting_time and min_waiting_time == 0:
             min_waiting_time_port = port
-    
+            print(f"Multiple ports with waiting time 0, selecting {port}")
+    print("Lowest waiting time port:", min_waiting_time_port)
     return min_waiting_time_port
 
 def get_input_features(ship, berth, ships_in_port):
