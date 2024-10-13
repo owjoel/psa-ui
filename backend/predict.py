@@ -9,8 +9,9 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
 
+eta_model = joblib.load('eta_model.joblib')
+eta_scaler = joblib.load('eta_scaler.joblib')
 load_dotenv()
-# eta_model = joblib.load('eta.pkl')
 waiting_time_model = joblib.load('WT.pkl')
 
 encodeMapping = {
@@ -43,18 +44,20 @@ db: Database
 
 db_init()
 
-# def predict_eta(data):
-#     return eta_model.predict(data)
+
+def predict_eta(data):
+    scaled_data = eta_scaler.transform(data)
+    return eta_model.predict(scaled_data)
 
 def get_lowest_wt_berth():
-    berth_waiting_times = {port: 0 for port in db.Berth.find().distinct('Berth_id')}
+    berth_waiting_times = {port: 0 for port in db.Berth.find().distinct('BerthCode')}
     
     ships_in_port = get_ships_in_port()
     print(f"Ships in port: {ships_in_port}")
     for berth in berth_waiting_times:
         total_waiting_time = 0
         print(f"Calculating waiting time for berth {berth}")
-        for ship in db.DockedShips.find({"PortCode": port}):  # Assuming a 'PortCode' field is available
+        for ship in db.DockedShips.find({"PortCode": port}):
             print(f"Calculating waiting time for ship {ship}")
             features = get_input_features(ship, berth, ships_in_port)
             total_waiting_time += waiting_time_model.predict([features])[0]
