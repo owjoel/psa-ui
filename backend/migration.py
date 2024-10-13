@@ -5,6 +5,9 @@ from pymongo import MongoClient, errors
 from pymongo.database import Database
 from datetime import datetime
 from urllib.parse import quote_plus
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # MongoDB connection
 def db_init():

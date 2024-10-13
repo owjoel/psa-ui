@@ -2,15 +2,23 @@ import joblib
 import requests
 import json
 from datetime import datetime
+from pymongo import MongoClient
 
 eta_model = joblib.load('WT.pkl')
 waiting_time_model = joblib.load()
+
+def get_db():
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['dev']  # Replace with your database name
+    return db
+# Initialize the connection
+db = get_db()
 
 def predict_eta(data):
     return eta_model.predict(data)
 
 def predict_waiting_time():
-    #initialize min = float('inf')
+    min_waiting_time = float('inf')
     
     #Get total ships in port
     ships_in_port = 0
@@ -53,11 +61,13 @@ def get_intput_features(ship, berth, ships_in_port):
         etd_autumn, etd_spring, etd_summer, etd_winter,
         ships_in_port,
         length, gt, breadth,
-        expected_waiting_time
+        expected_waiting_time,
+        ship.Berth_delay
             )
     
-    waiting_time_model.
-    
+    waiting_time = waiting_time_model.predict(*features)
+    print(waiting_time)
+    return waiting_time
 
 def get_ship_features(IMO):
     url = f"https://www.balticshipping.com"
@@ -141,11 +151,15 @@ def get_season(date_str):
     return autumn, spring, summer, winter
     
 # need to implement
-def get_berth_features(berthId):
-
-    return max_draft, max_loa, berth_length
-
-
+def get_berth_features(berth_code):
+    result = db.Berth.find_one({ 'BerthCode': berth_code }, { 'MaxDraft': 1, 'MaxLOA': 1, 'BerthLength': 1, '_id': 0 })
+    if result:
+        max_draft = result.get('MaxDraft')
+        max_loa = result.get('MaxLOA')
+        berth_length = result.get('BerthLength')
+        print(f"MaxDraft: {max_draft}, MaxLOA: {max_loa}, BerthLength: {berth_length}")
+    else:
+        print(f"No berth found for BerthCode: {berth_code}")
 
 def get_ships_at_port():
     ships = 0
@@ -167,6 +181,3 @@ def get_expected_waiting_time(etd_str, ata_str):
     waiting_time = (etd - ata).total_seconds() / 3600
 
     return waiting_time
-
-def get_berth_delay():
-    
