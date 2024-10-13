@@ -24,15 +24,23 @@ def health_check():
 @app.post('/allocation')
 def allocate_ship():
     try:
+        # marshal JSON
         data = request.get_json(silent=True)
         if not data:
             return jsonify({ "error": "Invalid JSON" }), 400
         ship_data = ShipData.from_dict(data)
         print(ship_data)
 
+        # run both models
         with ProcessPoolExecutor() as executor:
             f1 = executor.submit(predict_eta, ship_data)
             f2 = executor.submit(predict_waiting_time)
+
+            result1 = f1.result()
+            result2 = f2.result()
+        
+        # Store in DB
+        print(f1, f2)
 
         return jsonify(ship_data.to_dict()), 200
     
