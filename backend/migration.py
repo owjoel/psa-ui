@@ -29,35 +29,35 @@ client: MongoClient
 db: Database
 db_init()
 
-# LOAD DOCKEDSHIPS DATA
-# file_path = './data/combined_vessel_data.csv'
-# df = pd.read_csv(file_path)
+LOAD DOCKEDSHIPS DATA
+file_path = './data/combined_vessel_data.csv'
+df = pd.read_csv(file_path)
 
-# # Transform DataFrame into JSON
-# def get_docked_ships_json(df):
-#     records = []
-#     for _, row in df.iterrows():
-#         record = {
-#             "IMO": row['IMO'] if pd.notnull(row['IMO']) else None,
-#             "ATA": datetime.strptime(row['Actual Arrival Time'], '%Y/%m/%d %H:%M') if pd.notnull(row['Actual Arrival Time']) else None,
-#             "ShipType": row['Ship Type'] if pd.notnull(row['Ship Type']) else None,
-#             "ETD": datetime.strptime(row['Estimated Departure Time'], '%Y/%m/%d %H:%M') if pd.notnull(row['Estimated Departure Time']) else None,
-#             "Berth_id": row['Berth'] if pd.notnull(row['Berth']) else None
-#         }
-#         records.append(record)
-#     return records
+# Transform DataFrame into JSON
+def get_docked_ships_json(df):
+    records = []
+    for _, row in df.iterrows():
+        record = {
+            "IMO": row['IMO'] if pd.notnull(row['IMO']) else None,
+            "ATA": datetime.strptime(row['Actual Arrival Time'], '%Y/%m/%d %H:%M') if pd.notnull(row['Actual Arrival Time']) else None,
+            "ShipType": row['Ship Type'] if pd.notnull(row['Ship Type']) else None,
+            "ETD": datetime.strptime(row['Estimated Departure Time'], '%Y/%m/%d %H:%M') if pd.notnull(row['Estimated Departure Time']) else None,
+            "Berth_id": row['Berth'] if pd.notnull(row['Berth']) else None
+        }
+        records.append(record)
+    return records
 
-# # Batch insert DockedShips
-# def batch_insert_dockedships(records):
-#     if records:
-#         db.DockedShips.insert_many(records)
+# Batch insert DockedShips
+def batch_insert_dockedships(records):
+    if records:
+        db.DockedShips.insert_many(records)
 
-# # Transform CSV data into JSON format for DockedShips
-# json_records_dockedships = get_docked_ships_json(df)
+# Transform CSV data into JSON format for DockedShips
+json_records_dockedships = get_docked_ships_json(df)
 
-# # Insert into MongoDB for DockedShips
-# batch_insert_dockedships(json_records_dockedships)
-# print(f"Inserted {len(json_records_dockedships)} records into the DockedShips collection.")
+# Insert into MongoDB for DockedShips
+batch_insert_dockedships(json_records_dockedships)
+print(f"Inserted {len(json_records_dockedships)} records into the DockedShips collection.")
 
 
 # LOAD BERTH DATA
