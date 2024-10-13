@@ -1,8 +1,10 @@
 import joblib
 import requests
 import json
+import sys
 from datetime import datetime
 from pymongo import MongoClient, errors
+from pymongo.database import Database
 import os
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
@@ -19,8 +21,6 @@ encodeMapping = {
     'TANKER (CRUDE,FUEL,DIESEL,LUB)': 4
 }
 
-SHIPS_IN_PORT = 35
-
 def db_init():
     global client
     global db
@@ -33,7 +33,6 @@ def db_init():
     try:
         client = MongoClient(uri)
         db = client['dev']
-        collection = db['allocations']
         print(f"MongoDB client connected")
     except errors.ConnectionFailure:
         sys.exit(1)
@@ -41,23 +40,36 @@ def db_init():
 # Initialize the connection
 client: MongoClient
 db: Database
+
 db_init()
+
 def predict_eta(data):
     return eta_model.predict(data)
 
-def predict_waiting_time():
-    min_waiting_time = float('inf')
+def get_lowest_wt_berth():
+    berth_waiting_times = {port: 0 for port in db.Berth.find().distinct('Berth_id')}
     
-    # For each berth
-        # initiaize sum = 0
-        # Ships = getBerthShips(berthId)
-        # For ship in Ships
-            features = get_input_features(ship, berth, SHIPS_IN_PORT)
-            sum+= waiting_time_model.predict(features)
-        #
-    return waiting_time_model.predict(data)
+    ships_in_port = get_ships_in_port()
 
-def get_intput_features(ship, berth, ships_in_port):
+    for berth in berth_waiting_times:
+        total_waiting_time = 0
+        for ship in db.DockedShips.find({"PortCode": port}):  # Assuming a 'PortCode' field is available
+            features = get_input_features(ship, berth, ships_in_port)
+            total_waiting_time += waiting_time_model.predict([features])[0]
+        berth_waiting_times[port] = total_waiting_time
+
+    min_waiting_time_port = None
+    min_waiting_time = float('inf')
+    for port, waiting_time in berth_waiting_times.items():
+        if waiting_time < min_waiting_time:
+            min_waiting_time = waiting_time
+            min_waiting_time_port = port
+        elif waiting_time == min_waiting_time and min_waiting_time == 0:
+            min_waiting_time_port = port
+    
+    return min_waiting_time_port
+
+def get_input_features(ship, berth, ships_in_port):
     features = []
 
     shipType = encodeMapping.get(ship.ShipType, 0) 
@@ -92,9 +104,7 @@ def get_intput_features(ship, berth, ships_in_port):
         ship.Berth_delay
             )
     
-    waiting_time = waiting_time_model.predict(*features)
-    print(waiting_time)
-    return waiting_time
+    return features
 
 def get_ship_features(IMO):
     url = f"https://www.balticshipping.com"
@@ -149,7 +159,6 @@ def get_day(date_str):
     
     return fri, mon, sat, sun, thurs, tues, wed
 
-
 def get_shift(date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
     hour = date.hour
@@ -200,3 +209,9 @@ def get_expected_waiting_time(etd_str, ata_str):
     waiting_time = (etd - ata).total_seconds() / 3600
 
     return waiting_time
+
+def get_ships_in_port():
+    # Get the number of ships currently in port
+    return db.DockedShips.count_documents({})
+
+get_lowest_wt_berth()

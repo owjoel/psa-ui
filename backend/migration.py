@@ -31,7 +31,6 @@ def db_init():
 client: MongoClient
 db: Database
 db_init()
-
 # LOAD DOCKEDSHIPS DATA
 file_path = './data/combined_vessel_data.csv'
 df = pd.read_csv(file_path)
