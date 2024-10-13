@@ -35,6 +35,13 @@ db_init()
 # LOAD DOCKEDSHIPS DATA
 file_path = './data/combined_vessel_data.csv'
 df = pd.read_csv(file_path)
+df['Arrival Date'] = pd.to_datetime(df['Actual Arrival Time'])
+df['Arrival Date'] = df['Arrival Date'].dt.date
+date_counts = df['Arrival Date'].value_counts()
+print(str(date_counts.index[0]))
+
+df = df[df['Arrival Date'] == pd.to_datetime(date_counts.index[0]).date()]
+df = df.sort_values(by='Actual Arrival Time', ascending=True)
 
 # Transform DataFrame into JSON
 def get_docked_ships_json(df):
