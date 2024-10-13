@@ -36,11 +36,11 @@ def allocate_ship():
             f1 = executor.submit(predict_eta, ship_data)
             f2 = executor.submit(predict_waiting_time)
 
-            result1 = f1.result()
-            result2 = f2.result()
+            r1 = f1.result()
+            r2 = f2.result()
         
         # Store in DB
-        print(f1, f2)
+        print(r1, r2)
 
         return jsonify(ship_data.to_dict()), 200
     
