@@ -13,9 +13,11 @@ export default function Dashboard() {
   return (
     <div className="p-6">
       <Title order={3}>Dashboard</Title>
-      <Space h="lg" />
+      {/* <Space h="lg" /> */}
       <StatsGrid />
       <Space h="lg" />
+      <Map />
+      {/* <Space h="lg" /> */}
       <Flex
         mih={50}
         gap="md"
@@ -23,13 +25,11 @@ export default function Dashboard() {
         align="center"
         direction="row"
         wrap="wrap"
-        h="24rem"
+        // h="24rem"
       >
         <Form />
-        <PortUsage />
+        {/* <PortUsage/> */}
       </Flex>
-      <Space h="lg" />
-      <Map />
 
 
     </div>
