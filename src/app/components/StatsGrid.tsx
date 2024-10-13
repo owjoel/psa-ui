@@ -1,26 +1,29 @@
 import { Group, Paper, SimpleGrid, Text } from '@mantine/core';
 import {
+  IconAnchor,
+  IconShip,
   IconUserPlus,
-  IconDiscount2,
+  IconCalendarFilled,
   IconReceipt2,
-  IconCoin,
   IconArrowUpRight,
   IconArrowDownRight,
+  IconClockRecord,
 } from '@tabler/icons-react';
 import classes from './StatsGrid.module.css';
 
 const icons = {
-  user: IconUserPlus,
-  discount: IconDiscount2,
+  anchor: IconAnchor,
+  clock: IconClockRecord,
+  calendar: IconCalendarFilled,
   receipt: IconReceipt2,
-  coin: IconCoin,
+  ship: IconShip
 };
 
 const data = [
-  { title: 'At Berth', icon: 'receipt', value: '13,456', diff: 34 },
-  { title: 'Underway', icon: 'coin', value: '4,145', diff: -13 },
-  { title: 'Scheduled', icon: 'discount', value: '745', diff: 18 },
-  { title: 'Delayed', icon: 'user', value: '188', diff: -30 },
+  { title: 'At Berth', icon: 'anchor', value: '13,456', diff: 34 },
+  { title: 'Underway', icon: 'ship', value: '4,145', diff: -13 },
+  { title: 'Scheduled', icon: 'calendar', value: '745', diff: 18 },
+  { title: 'Delayed', icon: 'clock', value: '188', diff: -30 },
 ] as const;
 
 export function StatsGrid() {

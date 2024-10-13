@@ -6,6 +6,7 @@
     flex-direction: column;
     background-color: var(--mantine-color-blue-filled);
     position: sticky;
+    top: 0px;
   }
   
   .navbarMain {
