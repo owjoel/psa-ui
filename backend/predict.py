@@ -2,38 +2,65 @@ import joblib
 import requests
 import json
 from datetime import datetime
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
+import os
+from dotenv import load_dotenv
+from urllib.parse import quote_plus
 
+load_dotenv()
 eta_model = joblib.load('WT.pkl')
 waiting_time_model = joblib.load()
 
-def get_db():
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client['dev']  # Replace with your database name
-    return db
-# Initialize the connection
-db = get_db()
+encodeMapping = {
+    'Container': 0,
+    'GENERAL / HEAVY LIFT CARGO': 1,
+    'LIQUIFIED NATURAL GAS TANKER': 2,
+    'LIQUIFIED PETROLEUM GAS TANKER': 3,
+    'TANKER (CRUDE,FUEL,DIESEL,LUB)': 4
+}
 
+SHIPS_IN_PORT = 35
+
+def db_init():
+    global client
+    global db
+    host: str = os.getenv('MONGO_HOST')
+    port: str = os.getenv('MONGO_PORT')
+    username: str = os.getenv('MONGO_USERNAME')
+    password: str = os.getenv('MONGO_PASSWORD')
+    uri = "mongodb://%s:%s@%s:%s" % (
+        quote_plus(username), quote_plus(password), quote_plus(host), quote_plus(port))
+    try:
+        client = MongoClient(uri)
+        db = client['dev']
+        collection = db['allocations']
+        print(f"MongoDB client connected")
+    except errors.ConnectionFailure:
+        sys.exit(1)
+
+# Initialize the connection
+client: MongoClient
+db: Database
+db_init()
 def predict_eta(data):
     return eta_model.predict(data)
 
 def predict_waiting_time():
     min_waiting_time = float('inf')
     
-    #Get total ships in port
-    ships_in_port = 0
     # For each berth
         # initiaize sum = 0
         # Ships = getBerthShips(berthId)
         # For ship in Ships
-            features = get_input_features(ship, berth, ships_in_port)
+            features = get_input_features(ship, berth, SHIPS_IN_PORT)
             sum+= waiting_time_model.predict(features)
         #
     return waiting_time_model.predict(data)
 
 def get_intput_features(ship, berth, ships_in_port):
     features = []
-    
+
+    shipType = encodeMapping.get(ship.ShipType, 0) 
     length, gt, breadth = get_ship_features(ship.IMO)
     
     ata_shift = get_shift(ship.ATA)
@@ -49,9 +76,9 @@ def get_intput_features(ship, berth, ships_in_port):
     max_draft, max_loa, berth_length= get_berth_features(berth.BerthCode)
 
     expected_waiting_time = get_expected_waiting_time(ship.ETD,ship.ATA)
-
+    berth_delay = ship.BerthDelay if hasattr(ship, 'BerthDelay') and ship.BerthDelay is not None else 0
     features.append(
-        int(ship.ShipType),
+        shipType,
         ship.MaxVesselDraft,
         max_draft, max_loa, berth_length,
         ata_fri, ata_mon, ata_sat, ata_sun, ata_thurs, ata_tues, ata_wed,
@@ -160,14 +187,6 @@ def get_berth_features(berth_code):
         print(f"MaxDraft: {max_draft}, MaxLOA: {max_loa}, BerthLength: {berth_length}")
     else:
         print(f"No berth found for BerthCode: {berth_code}")
-
-def get_ships_at_port():
-    ships = 0
-    
-    # Get all ships at port
-
-
-    return ships
 
 def get_expected_waiting_time(etd_str, ata_str):
     # Define the format of the datetime strings
